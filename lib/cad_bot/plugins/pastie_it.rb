@@ -1,6 +1,6 @@
 require 'pastie-api'
 
-class PastieCmd < CadBot::Plugin
+class PastieIt < CadBot::Plugin
   
   listen_to :private
   match /^@pastie start$/, method: :start, :use_prefix => false
@@ -11,9 +11,11 @@ class PastieCmd < CadBot::Plugin
     @listening_to ||= []
     @pastie_lines ||= {}
     
-    if @listening_to.include? m.user.nick
-      unless m.message == "@pastie start" || m.message == "@pastie stop"
-        @pastie_lines[m.user.nick] << m.message
+    unless m.user.nil?
+      if @listening_to.include? m.user.nick
+        unless m.message == "@pastie start" || m.message == "@pastie stop"
+          @pastie_lines[m.user.nick] << m.message
+        end
       end
     end
   end
