@@ -1,7 +1,6 @@
 require 'pastie-api'
 
-class PastieCmd
-  include Cinch::Plugin
+class PastieCmd < CadBot::Plugin
   
   listen_to :private
   match /^@pastie start$/, method: :start, :use_prefix => false

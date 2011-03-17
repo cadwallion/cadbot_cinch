@@ -1,4 +1,4 @@
-class Seen
+class Seen < CadBot::Plugin
   class SeenStruct < Struct.new(:who, :where, :what, :time)
     def to_s
       "[#{time.asctime}] #{who} was seen in #{where} saying #{what}"

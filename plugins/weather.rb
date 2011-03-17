@@ -1,8 +1,7 @@
 require 'nokogiri'
 require 'em-http-request'
 
-class Weather
-  include Cinch::Plugin
+class Weather < CadBot::Plugin
   
   WEATHER_PAR = "1079693758"
 	WEATHER_API = "a6939d9b2b51255c"
@@ -14,7 +13,6 @@ class Weather
 			'key' => WEATHER_API
 	}
   
-  prefix "@"
   match /weather report (.+)/, method: :report
   match /weather forecast (.+)/, method: :forecast
   match /weather map (.+)/, method: :map

@@ -1,8 +1,5 @@
 require 'cinch'
-require './plugins/bot_snack'
-require './plugins/weather'
-require './plugins/seen'
-require './plugins/pastie'
+require './plugin'
 
 bot = Cinch::Bot.new do
   configure do |c|
@@ -10,7 +7,7 @@ bot = Cinch::Bot.new do
     c.server  = "irc.mmoirc.com"
     c.channels = ["#coding"]
     c.verbose = true
-    c.plugins.plugins = [BotSnack, Weather, Seen, PastieCmd]
+    c.plugins.plugins = [BotSnack, Weather, Seen, PastieCmd, Google]
   end
 end
 
