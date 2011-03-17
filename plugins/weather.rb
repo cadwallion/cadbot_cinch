@@ -13,10 +13,6 @@ class Weather < CadBot::Plugin
 			'key' => WEATHER_API
 	}
   
-<<<<<<< HEAD
-=======
-  prefix "@"
->>>>>>> df6a13a15cebaa73d6ffd0888f534422fad32150
   match /weather report (.+)/, method: :report
   match /weather forecast (.+)/, method: :forecast
   match /weather map (.+)/, method: :map
