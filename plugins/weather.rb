@@ -14,7 +14,7 @@ class Weather
 			'key' => WEATHER_API
 	}
 
-  match /weather (\S+) ?(\S+)?/, method: :weather
+  match /weather (\S+) ?(.+)?/, method: :weather
   
   def weather(m, command, param)
     case command
