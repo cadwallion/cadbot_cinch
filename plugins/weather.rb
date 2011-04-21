@@ -13,11 +13,27 @@ class Weather
 			'par' => WEATHER_PAR,
 			'key' => WEATHER_API
 	}
+
+  match /weather (\S+) ?(\S+)?/, method: :weather
   
-  match /weather report (.+)/, method: :report
-  match /weather forecast (.+)/, method: :forecast
-  match /weather map (.+)/, method: :map
-  match /weather search (.+)/, method: :search
+  def weather(m, command, param)
+    case command
+    when 'report'
+      report m, param
+    when 'forecast'
+      forecast m, param
+    when 'map'
+      map m, param
+    when 'search'
+      search m, param
+    when 'convert'
+      convert m, param
+    when 'help'
+      m.reply "Weather commands.  USAGE: weather <command> <postal>."
+    else
+      m.reply "Unable to process that command"
+    end
+  end
   
   def report(m, postal)
     EventMachine.run do
@@ -91,11 +107,43 @@ class Weather
     m.reply "http://www.weather.com/weather/map/interactive/#{postal}"
   end
   
+  def convert(m, temp)
+    if temp =~ /^([\-0-9]*)([Ff]|[Cc])$/
+      value = $1
+      if $2 =~ /F|f/
+        to = "C"
+        from = "F"
+        conversion = convert_to_c(value)
+      else
+        to = "F"
+        from = "C"
+        conversion = convert_to_f(value)
+      end
+      
+      if conversion == "N/A"
+        m.reply "Conversion returned null, please try again."
+      else
+        m.reply("#{temp} converts to #{conversion}#{to}")
+      end
+    else
+      
+      m.reply "Cannot convert that temperature, please try again."
+    end
+  end
+  
   def convert_to_c(value)
 		if value =~ /^[\-0-9]*$/
 			( value.to_i - 32 ) * 5 / 9
 		else
 			"N/A"
 		end
+	end
+	
+	def convert_to_f(value)
+	  if value =~ /^[-0-9]*$/
+	    ((value.to_i * 9) / 5 ) + 32
+    else
+      "N/A"
+    end
 	end
 end
