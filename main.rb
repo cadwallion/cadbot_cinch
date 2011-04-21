@@ -1,3 +1,5 @@
 require './lib/cad_bot'
-Process.daemon()
-CadBot::Manager.new.run
+Process.daemon
+
+bot = CadBot.new
+bot.start
