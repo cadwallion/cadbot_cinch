@@ -47,7 +47,11 @@ class CadBot
     @config["networks"].each do |network|
       @options = NETWORK_DEFAULTS.merge(network)
       puts "options: #{@options}"
-      b = Cinch::Bot.new
+      
+      b = Cinch::Bot.new do
+        @database = CadBot::Database.connection # @TODO: hook plugins up
+      end
+      
       @options.each do |key, value|
         b.config.send("#{key}=", value)
       end

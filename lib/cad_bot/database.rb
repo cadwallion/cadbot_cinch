@@ -2,7 +2,7 @@ class CadBot
   class Database
     class << self
       def load(config)
-        @connection ||= Redis.new
+        @connection ||= Redis.new(config.merge(:thread_safe => true))
       end
       
       def connection

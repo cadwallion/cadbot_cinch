@@ -1,4 +1,6 @@
 *.pid
 *.rdb
+doc/**/*
+doc/*
 config/bots.yml
 log/*.log
