@@ -1,2 +1,4 @@
 *.pid
+*.rdb
+config/bots.yml
 log/*.log
