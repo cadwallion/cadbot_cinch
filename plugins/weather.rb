@@ -15,7 +15,7 @@ class Weather
 			'key' => WEATHER_API
 	}
 
-  match /weather (\S+) ?(.+)?/, method: :weather
+  match /weather ?(\S+)? ?(.+)?/, method: :weather
   
   def weather(m, command, param)
     case command
@@ -34,13 +34,18 @@ class Weather
     when 'help'
       m.reply "Weather commands.  USAGE: weather <command> <postal>."
     else
-      m.reply "Unable to process that command"
+      postal = get_postal_for_user(m.user.nick)
+      if postal.nil?
+        m.reply "Unable to process that command"
+      else
+        report m, postal
+      end
     end
   end
   
   def report(m, param)
     if param == '' || param.nil?
-      postal = redis.get("user:#{m.user.nick}:postal")
+      postal = get_postal_for_user(m.user.nick)
       if postal.nil?
         m.reply "Postal code not provided nor on file."
         return
@@ -161,6 +166,10 @@ class Weather
   
   def redis
     @redis ||= Redis.new(:path => "/tmp/redis.sock")
+  end
+  
+  def get_postal_for_user(nick)
+    return redis.get("user:#{nick}:postal")
   end
   
   def convert_to_c(value)
