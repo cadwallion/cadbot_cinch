@@ -1,5 +1,6 @@
 require 'nokogiri'
 require 'em-http-request'
+require 'redis'
 
 class Weather
   include Cinch::Plugin
@@ -28,6 +29,8 @@ class Weather
       search m, param
     when 'convert'
       convert m, param
+    when 'save'
+      save m, param
     when 'help'
       m.reply "Weather commands.  USAGE: weather <command> <postal>."
     else
@@ -35,7 +38,16 @@ class Weather
     end
   end
   
-  def report(m, postal)
+  def report(m, param)
+    if param == '' || param.nil?
+      postal = redis.get("user:#{m.user.nick}:postal")
+      if postal.nil?
+        m.reply "Postal code not provided nor on file."
+        return
+      end
+    else
+      postal = param
+    end
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS
       http.callback do
@@ -55,7 +67,16 @@ class Weather
     end
   end
   
-  def forecast(m, postal)
+  def forecast(m, param)
+    if param == '' || param.nil?
+      postal = redis.get("user:#{m.user.nick}:postal")
+      if postal.nil?
+        m.reply "Postal code not provided nor on file."
+        return
+      end
+    else
+      postal = param
+    end
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS.merge('dayf' => '5')
       http.callback do
@@ -129,6 +150,17 @@ class Weather
       
       m.reply "Cannot convert that temperature, please try again."
     end
+  end
+  
+  def save(m, postal)
+    unless postal == ''
+      redis.set("user:#{m.user.nick}:postal", postal)
+      m.reply "Location saved."
+    end
+  end
+  
+  def redis
+    @redis ||= Redis.new(:path => "/tmp/redis.sock")
   end
   
   def convert_to_c(value)
