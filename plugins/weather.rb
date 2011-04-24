@@ -1,6 +1,5 @@
 require 'nokogiri'
 require 'em-http-request'
-require 'redis'
 
 class Weather
   include Cinch::Plugin
@@ -44,15 +43,9 @@ class Weather
   end
   
   def report(m, param)
-    if param == '' || param.nil?
-      postal = get_postal_for_user(m.user.nick)
-      if postal.nil?
-        m.reply "Postal code not provided nor on file."
-        return
-      end
-    else
-      postal = param
-    end
+    postal = get_user_postal(m.user.nick, param)
+    return if postal.nil?
+    
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS
       http.callback do
@@ -73,15 +66,9 @@ class Weather
   end
   
   def forecast(m, param)
-    if param == '' || param.nil?
-      postal = redis.get("user:#{m.user.nick}:postal")
-      if postal.nil?
-        m.reply "Postal code not provided nor on file."
-        return
-      end
-    else
-      postal = param
-    end
+    postal = get_user_postal(m.user.nick, param)
+    return if postal.nil?
+    
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS.merge('dayf' => '5')
       http.callback do
@@ -159,17 +146,25 @@ class Weather
   
   def save(m, postal)
     unless postal == ''
-      redis.set("user:#{m.user.nick}:postal", postal)
+      CadBot::Database.connection.set("user:#{m.user.nick}:postal", postal)
       m.reply "Location saved."
     end
   end
   
-  def redis
-    @redis ||= Redis.new(:path => "/tmp/redis.sock")
+  def get_postal_for_user(nick)
+    return CadBot::Database.connection.get("user:#{nick}:postal")
   end
   
-  def get_postal_for_user(nick)
-    return redis.get("user:#{nick}:postal")
+  def get_user_postal(user, param)
+    if param == '' || param.nil?
+      postal = get_postal_for_user(user)
+      if postal.nil?
+        m.reply "Postal code not provided nor on file."
+        return nil
+      end
+    else
+      return param
+    end
   end
   
   def convert_to_c(value)

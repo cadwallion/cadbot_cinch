@@ -6,3 +6,5 @@ networks:
     channels:
       - "#codebot"
     verbose: true
+database:
+    socket: /tmp/redis.sock

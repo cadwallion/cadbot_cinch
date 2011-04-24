@@ -1,5 +1,3 @@
-require 'redis'
-
 class Sed
   include Cinch::Plugin
   
@@ -9,7 +7,7 @@ class Sed
   
   def listen(m)
     unless m.message =~ /s\/(.*)\/(.*)\/(\S+)?/
-      redis.set("user:#{m.user.nick}:last_message", m.message)
+      set_last_message(m.user.nick, m.message)
     end
   end
   
@@ -27,11 +25,11 @@ class Sed
     m.reply "#{m.user.nick} meant '#{replacement}'"
   end
   
-  def redis
-    @redis ||= Redis.new(:path => "/tmp/redis.sock")
+  def set_last_message(user, message)
+    CadBot::Database.connection.set("user:#{user}:last_message", message)
   end
   
   def get_last_message(user)
-    redis.get("user:#{user}:last_message")
+    CadBot::Database.connection.get("user:#{user}:last_message")
   end
 end

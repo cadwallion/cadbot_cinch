@@ -1,7 +1,10 @@
 require 'cinch'
 require 'yaml'
 require 'ostruct'
-require File.dirname(__FILE__) + '/extensions'
+require 'redis'
+require File.dirname(__FILE__) + "/extensions"
+require File.dirname(__FILE__) + "/cad_bot/database"
+require File.dirname(__FILE__) + "/cad_bot/plugin_set"
 
 class CadBot
   attr_accessor :networks, :config, :plugin_path
@@ -15,27 +18,6 @@ class CadBot
     "realname"=> "cadbot"
   }
   
-  class PluginSet
-    attr_accessor :plugins, :prefix, :suffix, :path
-    
-    def initialize
-      @plugins  = []
-      @prefix   = "@"
-      @suffix   = nil
-      @path     = File.dirname(__FILE__) + "/../plugins/"
-    end
-    
-    def load
-      plugins.each do |p|
-        load(path + p + ".rb")
-      end
-    end
-    
-    def to_struct
-      return OpenStruct.new(:plugins => @plugins, :prefix => @prefix, :suffix => @suffix, :path => @path)
-    end
-  end
-  
   def initialize(*args)
     @config = File.open(CadBot.root + "/config/bots.yml", "r") { |f| YAML::load(f) }
     @plugins = CadBot::PluginSet.new
@@ -47,6 +29,7 @@ class CadBot
       @networks = {}
     load_plugins
     load_networks
+    load_database
   end
   
   def load_plugins
@@ -59,6 +42,7 @@ class CadBot
     end
   end
   
+  # @TODO: get the db object into the bot
   def load_networks
     @config["networks"].each do |network|
       @options = NETWORK_DEFAULTS.merge(network)
@@ -71,6 +55,20 @@ class CadBot
       b.config.verbose   = true
       @networks[network["name"]] = b
     end
+  end
+  
+  def load_database
+    if @config["database"]
+      db = @config["database"]
+      conds = {}
+      if db["socket"]
+        conds[:socket] = db["socket"]
+      elsif db["host"] || db["port"]
+        conds[:host] = db["host"] || "127.0.0.1"
+        conds[:port] = db["port"] || "6379"
+      end
+      CadBot::Database.load(conds)
+    end  
   end
   
   def start
