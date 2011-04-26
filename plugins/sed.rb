@@ -6,7 +6,7 @@ class Sed
   match /s\/(.*)\/(.*)\/(\S+)?/, :use_prefix => false
   
   def listen(m)
-    unless m.message =~ /s\/(.*)\/(.*)\/(\S+)?/
+    unless m.message =~ /^s\/(.*)\/(.*)\/?(\S+)?$/
       set_last_message(m.user.nick, m.message)
     end
   end
