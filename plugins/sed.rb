@@ -3,7 +3,7 @@ class Sed
   
   listen_to :channel
   
-  match /s\/(.*)\/(.*)\/(\S+)?/, :use_prefix => false
+  match /^s\/(.*)\/(.*)\/?(\S+)?$/, :use_prefix => false
   
   def listen(m)
     unless m.message =~ /^s\/(.*)\/(.*)\/?(\S+)?$/
