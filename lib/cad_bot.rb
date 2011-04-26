@@ -26,10 +26,10 @@ class CadBot
       @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
       @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
     end
-      @networks = {}
+    @networks = {}
+    load_database
     load_plugins
     load_networks
-    load_database
   end
   
   def load_plugins
