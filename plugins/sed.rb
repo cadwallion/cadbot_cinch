@@ -11,13 +11,17 @@ class Sed
     end
   end
   
-  def execute(m, matcher, replacement, conditional)
-    original = get_last_message(m.user.nick)
+  def execute(m, matcher, replacement, conditionals)
+    if conditionals =~ /([0-9]+)/
+      original = get_message(m.user.nick, $1)
+    else
+      original = get_message(m.user.nick)
+    end
     if original.nil?
       m.reply "You have to say something first."
       return
     end
-    if conditional == 'g'
+    if conditionals.include? 'g'
       replacement = original.gsub(matcher, replacement)
     else
       replacement = original.sub(matcher, replacement)
@@ -26,10 +30,11 @@ class Sed
   end
   
   def set_last_message(user, message)
-    CadBot::Database.connection.set("user:#{user}:last_message", message)
+    CadBot::Database.connection.lpush("user:#{user}:messages", message)
+    CadBot::Database.connection.ltrim("user:#{user}:messages", 0, 1000)
   end
   
-  def get_last_message(user)
-    CadBot::Database.connection.get("user:#{user}:last_message")
+  def get_user_message(user, scrollback = 1)
+    CadBot::Database.connection.lrange("user:#{user}:messages", 0, (scrollback - 1))
   end
 end
