@@ -13,9 +13,9 @@ class Sed
   
   def execute(m, matcher, replacement, conditionals)
     if conditionals =~ /([0-9]+)/
-      original = get_message(m.user.nick, $1)
+      original = get_user_message(m.user.nick, $1)
     else
-      original = get_message(m.user.nick)
+      original = get_user_message(m.user.nick)
     end
     if original.nil?
       m.reply "You have to say something first."
