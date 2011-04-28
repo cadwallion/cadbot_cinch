@@ -12,7 +12,7 @@ class Sed
   end
   
   def execute(m, matcher, replacement, conditional)
-    count = (conditional =~ /([0-9]+)/ ? $1.to_i : 0)
+    count = (conditional =~ /([0-9]+)/ ? $1.to_i : 1)
     original = get_user_message(m.user.nick, count)
     
     if original.nil?
@@ -33,7 +33,7 @@ class Sed
     CadBot::Database.connection.ltrim("user:#{user}:messages", 0, 1000)
   end
   
-  def get_user_message(user, scrollback = 0)
+  def get_user_message(user, scrollback = 1)
     index = scrollback - 1
     CadBot::Database.connection.lrange("user:#{user}:messages", index, index).first
   end
