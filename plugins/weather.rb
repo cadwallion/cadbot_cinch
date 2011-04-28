@@ -14,7 +14,7 @@ class Weather
 			'key' => WEATHER_API
 	}
 
-  match /^weather ?(\S+)? ?(.+)?/, method: :weather
+  match /^@weather ?(\S+)? ?(.+)?/, method: :weather, :use_prefix => false
   
   def weather(m, command, param)
     case command
