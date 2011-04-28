@@ -2,6 +2,8 @@ require 'cinch'
 require 'yaml'
 require 'ostruct'
 require 'redis'
+require "bundler/setup"
+
 require File.dirname(__FILE__) + "/extensions"
 require File.dirname(__FILE__) + "/cad_bot/database"
 require File.dirname(__FILE__) + "/cad_bot/plugin_set"
@@ -33,11 +35,13 @@ class CadBot
   end
   
   def load_plugins
-    Dir[@plugins.path + "*.rb"].each do |file|
-      if file =~ /(.*)\/plugins\/(.*)\.rb/
-        plugin = $2
-        load(@plugins.path + plugin + ".rb")
-        @plugins.plugins << plugin.camelize.constantize
+    Dir[@plugins.path + "/**/*.rb"].each do |file|
+      plugin = File.basename(file)
+      load(file)
+      plugin_class = plugin.sub(".rb","").camelize.constantize
+      puts(plugin_class.included_modules)
+      if plugin_class.included_modules.include? Cinch::Plugin
+        @plugins.plugins << plugin_class
       end
     end
   end
