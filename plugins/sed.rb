@@ -2,7 +2,7 @@ class Sed
   include Cinch::Plugin
   
   listen_to :channel
-  SED_REGEX = /^s\/(.*)\/(.*)\/?(\S+)?$/
+  SED_REGEX = /^s\/(.+?)\/(.+?)(\/\S+|\/|$)/
   match SED_REGEX, :use_prefix => false
   
   def listen(m)
@@ -11,17 +11,16 @@ class Sed
     end
   end
   
-  def execute(m, matcher, replacement, conditionals)
-    if conditionals =~ /([0-9]+)/
-      original = get_user_message(m.user.nick, $1)
-    else
-      original = get_user_message(m.user.nick)
-    end
+  def execute(m, matcher, replacement, conditional)
+    count = (conditional =~ /([0-9]+)/ ? $1.to_i : 1)
+    original = get_user_message(m.user.nick, count)
+    
     if original.nil?
-      m.reply "You have to say something first."
+      m.reply "You need to say something first."
       return
     end
-    if conditionals.include? 'g'
+  
+    if conditional.include? 'g'
       replacement = original.gsub(matcher, replacement)
     else
       replacement = original.sub(matcher, replacement)
@@ -35,6 +34,6 @@ class Sed
   end
   
   def get_user_message(user, scrollback = 1)
-    CadBot::Database.connection.lrange("user:#{user}:messages", 0, (scrollback - 1))
+    CadBot::Database.connection.lrange("user:#{user}:messages", (scrollback - 1), 1)[0]
   end
 end
