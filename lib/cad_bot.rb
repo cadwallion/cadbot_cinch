@@ -80,11 +80,15 @@ class CadBot
   
   def start
     @networks.each do |name, bot|
-      pid = fork do
+      if ENV['OS'] =~ /Windows/
         bot.start
+      else
+        pid = fork do
+          bot.start
+        end
+        Process.detach(pid)
+        File.open(CadBot.root + name + ".pid", "w+") { |f| f << pid }
       end
-      Process.detach(pid)
-      File.open(CadBot.root + name + ".pid", "w+") { |f| f << pid }
     end
   end
   
