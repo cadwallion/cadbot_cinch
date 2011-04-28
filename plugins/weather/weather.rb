@@ -14,7 +14,7 @@ class Weather
 			'key' => WEATHER_API
 	}
 
-  match /^@weather ?(\S+)? ?(.+)?/, method: :weather, :use_prefix => false
+  match /^@weather ?(\S+)? ?(\S+)?/, method: :weather, :use_prefix => false
   
   def weather(m, command, param)
     case command
@@ -33,7 +33,7 @@ class Weather
     when 'help'
       m.reply "Weather commands.  USAGE: weather <command> <postal>."
     else
-      postal = get_postal_for_user(m.user.nick)
+      postal = get_user_postal(m.user.nick, param)
       if postal.nil?
         m.reply "Unable to process that command"
       else
@@ -44,8 +44,7 @@ class Weather
   
   def report(m, param)
     postal = get_user_postal(m.user.nick, param)
-    return if postal.nil?
-    
+
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS
       http.callback do
@@ -151,16 +150,14 @@ class Weather
     end
   end
   
-  def get_postal_for_user(nick)
-    return @bot.database.get("user:#{nick}:postal")
-  end
-  
   def get_user_postal(user, param)
     if param == '' || param.nil?
-      postal = get_postal_for_user(user)
+      postal = @bot.database.get("user:#{user}:postal")
       if postal.nil?
         m.reply "Postal code not provided nor on file."
         return nil
+      else
+        return postal
       end
     else
       return param
