@@ -39,7 +39,6 @@ class CadBot
       plugin = File.basename(file)
       load(file)
       plugin_class = plugin.sub(".rb","").camelize.constantize
-      puts(plugin_class.included_modules)
       if plugin_class.included_modules.include? Cinch::Plugin
         @plugins.plugins << plugin_class
       end
