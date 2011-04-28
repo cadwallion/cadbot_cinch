@@ -29,12 +29,12 @@ class Sed
   end
   
   def set_last_message(user, message)
-    CadBot::Database.connection.lpush("user:#{user}:messages", message)
-    CadBot::Database.connection.ltrim("user:#{user}:messages", 0, 1000)
+    @bot.database.lpush("user:#{user}:messages", message)
+    @bot.database.ltrim("user:#{user}:messages", 0, 1000)
   end
   
   def get_user_message(user, scrollback = 1)
     index = scrollback - 1
-    CadBot::Database.connection.lrange("user:#{user}:messages", index, index).first
+    @bot.database.lrange("user:#{user}:messages", index, index).first
   end
 end

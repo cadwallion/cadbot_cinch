@@ -146,13 +146,13 @@ class Weather
   
   def save(m, postal)
     unless postal == ''
-      CadBot::Database.connection.set("user:#{m.user.nick}:postal", postal)
+      @bot.database.set("user:#{m.user.nick}:postal", postal)
       m.reply "Location saved."
     end
   end
   
   def get_postal_for_user(nick)
-    return CadBot::Database.connection.get("user:#{nick}:postal")
+    return @bot.database.get("user:#{nick}:postal")
   end
   
   def get_user_postal(user, param)
