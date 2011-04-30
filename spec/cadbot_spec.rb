@@ -35,6 +35,11 @@ describe CadBot do
         @bot.should respond_to(:test_method)
         @bot.test_method.should == "foo"
       end
+      
+      it "can specify not to use a configuration file" do
+        @bot = CadBot.new(:config_file => false)
+        @bot.config.should be_nil
+      end
     end
   end
   

@@ -22,41 +22,56 @@ class CadBot
   }
   
   def initialize(options = {}, &blk)
-    config_file = options[:config_file] || (CadBot.root + "/config/bots.yml")
-    
-    if File.readable?(config_file)
-      @config = File.open(config_file, "r") { |f| YAML::load(f) }
-    else
-      raise "Could not read configuration file."
-    end
-    
     @plugins = CadBot::PluginSet.new
-    if @config["plugins"]
-      @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
-      @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
-      @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
+    
+    case options[:config_file]
+    when false
+      config_file = nil
+    when nil
+      config_file = (CadBot.root + "/config/bots.yml")
+    else
+      config_file = options[:config_file]
     end
+    
+    unless config_file.nil?
+      if File.readable?(config_file)
+        @config = File.open(config_file, "r") { |f| YAML::load(f) }
+      else
+        raise "Could not read configuration file."
+      end
+      
+      if @config["plugins"]
+        @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
+        @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
+        @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
+      end
+    end
+
     @networks = {}
-    load_database
+    load_database if @config
     load_plugins
-    load_networks
+    load_networks if @config
     
     instance_eval(&blk) if block_given?
   end
   
   def load_plugins
     Dir[@plugins.path + "/**/*.rb"].each do |file|
-      plugin = File.basename(file).sub(".rb","")
-      if Object.const_defined?(plugin.camelize.to_sym)
-        Object.class_eval do
-          remove_const(plugin.camelize.to_sym)
-        end
+      load_plugin(file)
+    end
+  end
+  
+  def load_plugin(file)
+    plugin = File.basename(file).sub(".rb","")
+    if Object.const_defined?(plugin.camelize.to_sym)
+      Object.class_eval do
+        remove_const(plugin.camelize.to_sym)
       end
-      load(file)
-      plugin_class = plugin.sub(".rb","").camelize.constantize
-      if plugin_class.included_modules.include? Cinch::Plugin
-        @plugins.plugins << plugin_class
-      end
+    end
+    load(file)
+    plugin_class = plugin.sub(".rb","").camelize.constantize
+    if plugin_class.included_modules.include? Cinch::Plugin
+      @plugins.plugins << plugin_class
     end
   end
   
@@ -90,7 +105,7 @@ class CadBot
         conds[:port] = db["port"] || "6379"
       end
       CadBot::Database.load(conds)
-    end  
+    end
   end
   
   def start
