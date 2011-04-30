@@ -29,6 +29,9 @@ class Sed
   end
   
   def set_last_message(user, message)
+    if !@bot.database.sismember("users_logged", m.user.nick)
+      @bot.database.sadd("users_logged", m.user.nick)
+    end
     @bot.database.lpush("user:#{user}:messages", message)
     @bot.database.ltrim("user:#{user}:messages", 0, 1000)
   end

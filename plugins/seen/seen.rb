@@ -1,11 +1,6 @@
 require 'ostruct'
 class Seen
   include Cinch::Plugin
-  class SeenStruct < Struct.new(:who, :where, :what, :time)
-    def to_s
-      "[#{time.asctime}] #{who} was seen in #{where} saying #{what}"
-    end
-  end
   
   listen_to :channel
   
@@ -17,7 +12,18 @@ class Seen
   end
 
   def listen(m)
-    @users[m.user.nick] = SeenStruct.new(m.user, m.channel, m.message, Time.now)
+    @bot.database.set("user:#{m.user.nick}:last_spoke", Time.now)
+    begin
+      klass = Module.const_get("Sed")
+      klass.is_a?(Class)
+    rescue NameError
+      if !@bot.database.sismember("users_logged", m.user.nick)
+        @bot.database.sadd("users_logged", m.user.nick)
+      end
+      @bot.database.lpush("user:#{m.user.nick}:message", m.message)
+      @bot.database.ltrim("user:#{m.user.nick}:message", 1000)
+      @bot.database.set("user:#{m.user.nick}:channel", m.channel)
+    end
   end
 
   def execute(m, nick)
@@ -25,8 +31,10 @@ class Seen
       m.reply "That's me!"
     elsif nick == m.user.nick
       m.reply "That's you!"
-    elsif @users.key?(nick)
-      m.reply @users[nick].to_s
+    elsif @bot.database.sismember("users_logged", m.user.nick)
+      channel = @bot.database.get("user:#{m.user.nick}:channel")
+      time = @bot.database.get("user:#{m.user.nick}:last_spoke").asctime
+      m.reply "#{m.user.nick} was last seen in #{channel} at #{time}"
     else
       m.reply "I haven't seen #{nick}"
     end
