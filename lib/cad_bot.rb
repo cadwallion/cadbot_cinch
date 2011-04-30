@@ -21,7 +21,7 @@ class CadBot
     "realname"=> "cadbot"
   }
   
-  def initialize(options = {})
+  def initialize(options = {}, &blk)
     config_file = options[:config_file] || (CadBot.root + "/config/bots.yml")
     
     if File.readable?(config_file)
@@ -40,6 +40,8 @@ class CadBot
     load_database
     load_plugins
     load_networks
+    
+    instance_eval(&blk) if block_given?
   end
   
   def load_plugins

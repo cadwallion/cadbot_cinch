@@ -25,6 +25,16 @@ describe CadBot do
         @bot = CadBot.new(:config_file => custom_config_file)
         @bot.config.should == config_yaml
       end
+      
+      it "can take a block for additional configs" do
+        @bot = CadBot.new do
+          def test_method
+            "foo"
+          end
+        end
+        @bot.should respond_to(:test_method)
+        @bot.test_method.should == "foo"
+      end
     end
   end
   
