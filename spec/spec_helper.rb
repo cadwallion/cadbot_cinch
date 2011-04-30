@@ -1,0 +1,1 @@
+require 'cad_bot'

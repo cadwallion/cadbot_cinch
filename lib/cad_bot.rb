@@ -7,6 +7,7 @@ require "bundler/setup"
 require File.dirname(__FILE__) + "/extensions"
 require File.dirname(__FILE__) + "/cad_bot/database"
 require File.dirname(__FILE__) + "/cad_bot/plugin_set"
+require File.dirname(__FILE__) + "/cad_bot/version"
 
 class CadBot
   attr_accessor :networks, :config, :plugin_path
@@ -36,7 +37,12 @@ class CadBot
   
   def load_plugins
     Dir[@plugins.path + "/**/*.rb"].each do |file|
-      plugin = File.basename(file)
+      plugin = File.basename(file).sub(".rb","")
+      if Object.const_defined?(plugin.camelize.to_sym)
+        Object.class_eval do
+          remove_const(plugin.camelize.to_sym)
+        end
+      end
       load(file)
       plugin_class = plugin.sub(".rb","").camelize.constantize
       if plugin_class.included_modules.include? Cinch::Plugin
@@ -49,9 +55,9 @@ class CadBot
   def load_networks
     @config["networks"].each do |network|
       @options = NETWORK_DEFAULTS.merge(network)
-      puts "options: #{@options}"
       
       b = Cinch::Bot.new do
+        @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{network}.log", "a+"))
         @database = CadBot::Database.connection # @TODO: hook plugins up
       end
       
