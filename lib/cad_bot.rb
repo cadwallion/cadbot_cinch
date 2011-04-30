@@ -21,8 +21,15 @@ class CadBot
     "realname"=> "cadbot"
   }
   
-  def initialize(*args)
-    @config = File.open(CadBot.root + "/config/bots.yml", "r") { |f| YAML::load(f) }
+  def initialize(options = {})
+    config_file = options[:config_file] || (CadBot.root + "/config/bots.yml")
+    
+    if File.readable?(config_file)
+      @config = File.open(config_file, "r") { |f| YAML::load(f) }
+    else
+      raise "Could not read configuration file."
+    end
+    
     @plugins = CadBot::PluginSet.new
     if @config["plugins"]
       @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
@@ -65,7 +72,7 @@ class CadBot
         b.config.send("#{key}=", value)
       end
       b.config.plugins = @plugins.to_struct
-      b.config.verbose   = true
+      b.config.verbose   = false
       @networks[network["name"]] = b
     end
   end
@@ -100,5 +107,6 @@ class CadBot
   
   def self.root
     @root ||= File.dirname(__FILE__) + "/../"
+    @root
   end
 end

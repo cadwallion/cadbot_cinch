@@ -1,0 +1,10 @@
+networks:
+  - name: mmoirc2
+    server: irc.mmoirc.com
+    port: 6667
+    nick: TestSpec
+    channels:
+      - "#testspec"
+    verbose: false
+database:
+    socket: /tmp/redis.sock

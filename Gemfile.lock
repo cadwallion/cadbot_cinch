@@ -1,8 +1,14 @@
+GIT
+  remote: git://github.com/cadwallion/cinch.git
+  revision: 4ee2825bf45699a497dcf2c587055e4353693e20
+  branch: invest
+  specs:
+    cinch (1.1.2)
+
 GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.2.5)
-    cinch (1.1.2)
     diff-lcs (1.1.2)
     em-http-request (0.3.0)
       addressable (>= 2.0.0)
@@ -29,7 +35,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  cinch (~> 1.1.2)
+  cinch!
   em-http-request
   googleajax
   nokogiri
