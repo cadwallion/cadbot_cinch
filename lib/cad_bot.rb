@@ -33,24 +33,30 @@ class CadBot
       config_file = options[:config_file]
     end
     
-    unless config_file.nil?
+    if config_file.nil?
+      @config = {}
+    else
       if File.readable?(config_file)
         @config = File.open(config_file, "r") { |f| YAML::load(f) }
       else
         raise "Could not read configuration file."
       end
-      
-      if @config["plugins"]
-        @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
-        @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
-        @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
-      end
     end
-
+    
+    if options[:plugins]
+      @plugins.path = options[:plugins][:path] if options[:plugins][:path]
+      @plugins.prefix = options[:plugins][:prefix] if options[:plugins][:prefix]
+      @plugins.suffix = options[:plugins][:suffix] if options[:plugins][:suffix]  
+    elsif @config["plugins"]
+      @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
+      @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
+      @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
+    end
+    
     @networks = {}
-    load_database if @config
+    load_database
     load_plugins
-    load_networks if @config
+    load_networks
     
     instance_eval(&blk) if block_given?
   end
@@ -77,20 +83,22 @@ class CadBot
   
   # @TODO: get the db object into the bot
   def load_networks
-    @config["networks"].each do |network|
-      @options = NETWORK_DEFAULTS.merge(network)
+    if @config["networks"]
+      @config["networks"].each do |network|
+        @options = NETWORK_DEFAULTS.merge(network)
       
-      b = Cinch::Bot.new do
-        @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{network}.log", "a+"))
-        @database = CadBot::Database.connection # @TODO: hook plugins up
-      end
+        b = Cinch::Bot.new do
+          @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{network["name"]}.log", "a+"))
+          @database = CadBot::Database.connection # @TODO: hook plugins up
+        end
       
-      @options.each do |key, value|
-        b.config.send("#{key}=", value)
+        @options.each do |key, value|
+          b.config.send("#{key}=", value)
+        end
+        b.config.plugins = @plugins.to_struct
+        b.config.verbose   = false
+        @networks[network["name"]] = b
       end
-      b.config.plugins = @plugins.to_struct
-      b.config.verbose   = false
-      @networks[network["name"]] = b
     end
   end
   

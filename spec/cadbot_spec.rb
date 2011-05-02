@@ -38,8 +38,15 @@ describe CadBot do
       
       it "can specify not to use a configuration file" do
         @bot = CadBot.new(:config_file => false)
-        @bot.config.should be_nil
+        @bot.config.should == {}
       end
+    end
+  end
+  
+  describe "#load_plugins" do
+    it "loads all plugins to the PluginSet" do
+      @bot = CadBot.new(:config_file => false, :plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
+      @bot.plugins.plugins.should == [BotSnack]
     end
   end
   
