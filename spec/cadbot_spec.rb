@@ -40,13 +40,38 @@ describe CadBot do
         @bot = CadBot.new(:config_file => false)
         @bot.config.should == {}
       end
+      
+      it "can specify no plugin directory to load manually" do
+        @bot = CadBot.new(:plugins => false)
+        @bot.plugins.plugins.should == []
+      end
+      
+      it "can specify plugin variables (path, suffix, prefix)" do
+        @bot = CadBot.new(:plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
+        @bot.plugins.plugins.should == [BotSnack]
+      end
     end
   end
   
   describe "#load_plugins" do
     it "loads all plugins to the PluginSet" do
       @bot = CadBot.new(:config_file => false, :plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
+      @bot.plugins.should be_kind_of(CadBot::PluginSet)
       @bot.plugins.plugins.should == [BotSnack]
+    end
+  end
+  
+  describe "#load_plugin" do
+    it "clears out old versions of the plugins before loading new ones" do
+      @bot = CadBot.new(:config_file => false, :plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
+      @bot.load_plugin(CadBot.root + "spec/fixtures/plugins/botsnack/bot_snack.rb")
+      @bot.plugins.plugins.should == [BotSnack]
+    end
+    
+    it "pulls only plugins that include Cinch::Plugins" do
+      @bot = CadBot.new(:config_file => false, :plugins => false)
+      @bot.load_plugin(CadBot.root + "spec/fixtures/plugins/fake/fake.rb")
+      @bot.plugins.plugins.should_not include(Fake)
     end
   end
   

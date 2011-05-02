@@ -44,24 +44,28 @@ class CadBot
     end
     
     if options[:plugins]
-      @plugins.path = options[:plugins][:path] if options[:plugins][:path]
-      @plugins.prefix = options[:plugins][:prefix] if options[:plugins][:prefix]
-      @plugins.suffix = options[:plugins][:suffix] if options[:plugins][:suffix]  
+      if options[:plugins] != false
+        @plugins.path = options[:plugins][:path] if options[:plugins][:path]
+        @plugins.prefix = options[:plugins][:prefix] if options[:plugins][:prefix]
+        @plugins.suffix = options[:plugins][:suffix] if options[:plugins][:suffix]
+        load_plugins  
+      end
     elsif @config["plugins"]
       @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
       @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
       @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
+      load_plugins
     end
     
     @networks = {}
     load_database
-    load_plugins
     load_networks
     
     instance_eval(&blk) if block_given?
   end
   
   def load_plugins
+    @plugins.plugins = []
     Dir[@plugins.path + "/**/*.rb"].each do |file|
       load_plugin(file)
     end
@@ -70,6 +74,7 @@ class CadBot
   def load_plugin(file)
     plugin = File.basename(file).sub(".rb","")
     if Object.const_defined?(plugin.camelize.to_sym)
+      @plugins.plugins.delete(plugin.camelize.constantize)
       Object.class_eval do
         remove_const(plugin.camelize.to_sym)
       end
