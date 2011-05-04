@@ -75,6 +75,38 @@ describe CadBot do
     end
   end
   
+  describe "#load_networks" do
+    it "calls #load_network for every network in the @config" do
+      @test_config = File.open(CadBot.root + "spec/fixtures/bot.yml", "r") { |f| YAML::load(f) }
+      @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml")
+      @bot.should_receive(:load_network).exactly(@test_config["networks"].size)
+      @bot.load_networks
+    end
+    
+    it "should not call load_network if there are no networks in the @config" do
+      @bot = CadBot.new(:config_file => false)
+      @bot.should_not_receive(:load_network)
+      @bot.load_networks
+    end
+  end
+  
+  describe "#load_network" do
+    it "creates an instance of Cinch::Bot and assigns to @networks" do
+      @test_config = File.open(CadBot.root + "spec/fixtures/bot.yml", "r") { |f| YAML::load(f) }
+      @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml")
+      @bot.networks[@test_config["networks"][0]["name"]].should be_instance_of(Cinch::Bot)
+    end
+    
+    it "sends options hash to the Cinch::Bot instance" do
+      @test_config = File.open(CadBot.root + "spec/fixtures/bot.yml", "r") { |f| YAML::load(f) }
+      @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml")
+      test_network = @test_config["networks"][0]
+      test_network.each do |k, v|
+        @bot.networks[test_network["name"]].config.send(k.to_sym).should == v
+      end
+    end
+  end
+  
   it "should have a version" do
     CadBot::VERSION.should_not be_nil
   end

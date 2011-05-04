@@ -90,21 +90,25 @@ class CadBot
   def load_networks
     if @config["networks"]
       @config["networks"].each do |network|
-        @options = NETWORK_DEFAULTS.merge(network)
-      
-        b = Cinch::Bot.new do
-          @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{network["name"]}.log", "a+"))
-          @database = CadBot::Database.connection # @TODO: hook plugins up
-        end
-      
-        @options.each do |key, value|
-          b.config.send("#{key}=", value)
-        end
-        b.config.plugins = @plugins.to_struct
-        b.config.verbose   = false
-        @networks[network["name"]] = b
+        load_network(network)
       end
     end
+  end
+  
+  def load_network(options = {})
+    options = NETWORK_DEFAULTS.merge(options)
+    
+    b = Cinch::Bot.new do
+      @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{options["name"]}.log", "a+"))
+      @database = CadBot::Database.connection
+    end
+  
+    options.each do |key, value|
+      b.config.send("#{key}=", value)
+    end
+    
+    b.config.plugins = @plugins.to_struct
+    @networks[options["name"]] = b
   end
   
   def load_database
