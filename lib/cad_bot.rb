@@ -21,59 +21,76 @@ class CadBot
     "realname"=> "cadbot"
   }
   
-  def initialize(options = {})
-    config_file = options[:config_file] || (CadBot.root + "/config/bots.yml")
+  def initialize(options = {}, &blk)
+    @plugins = CadBot::PluginSet.new
     
-    if File.readable?(config_file)
-      @config = File.open(config_file, "r") { |f| YAML::load(f) }
+    case options[:config_file]
+    when false
+      config_file = nil
+    when nil
+      config_file = (CadBot.root + "/config/bots.yml")
     else
-      raise "Could not read configuration file."
+      config_file = options[:config_file]
     end
     
-    @plugins = CadBot::PluginSet.new
+    if config_file.nil?
+      @config = {}
+    else
+      if File.readable?(config_file)
+        @config = File.open(config_file, "r") { |f| YAML::load(f) }
+      else
+        raise "Could not read configuration file."
+      end
+    end
+    
+    if options[:plugins]
+      if options[:plugins] != false
+        @config["plugins"] ||= {}
+        options[:plugins].each do |k,v|
+          @config["plugins"][k.to_s] = v
+        end
+      end
+    end
+    
+    load_plugins
+    
+    @networks = {}
+    load_database
+    load_networks
+    
+    instance_eval(&blk) if block_given?
+  end
+
+  def load_networks
+    if @config["networks"]
+      @config["networks"].each do |network|
+        load_network(network)
+      end
+    end
+  end
+  
+  def load_network(options = {})
+    options = NETWORK_DEFAULTS.merge(options)
+    
+    b = Cinch::Bot.new do
+      @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{options["name"]}.log", "a+"))
+      @database = CadBot::Database.connection
+    end
+  
+    options.each do |key, value|
+      b.config.send("#{key}=", value)
+    end
+    
+    b.config.plugins = @plugins.to_struct
+    @networks[options["name"]] = b
+  end
+  
+  def load_plugins
     if @config["plugins"]
       @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
       @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
       @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
-    end
-    @networks = {}
-    load_database
-    load_plugins
-    load_networks
-  end
-  
-  def load_plugins
-    Dir[@plugins.path + "/**/*.rb"].each do |file|
-      plugin = File.basename(file).sub(".rb","")
-      if Object.const_defined?(plugin.camelize.to_sym)
-        Object.class_eval do
-          remove_const(plugin.camelize.to_sym)
-        end
-      end
-      load(file)
-      plugin_class = plugin.sub(".rb","").camelize.constantize
-      if plugin_class.included_modules.include? Cinch::Plugin
-        @plugins.plugins << plugin_class
-      end
-    end
-  end
-  
-  # @TODO: get the db object into the bot
-  def load_networks
-    @config["networks"].each do |network|
-      @options = NETWORK_DEFAULTS.merge(network)
-      
-      b = Cinch::Bot.new do
-        @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{network}.log", "a+"))
-        @database = CadBot::Database.connection # @TODO: hook plugins up
-      end
-      
-      @options.each do |key, value|
-        b.config.send("#{key}=", value)
-      end
-      b.config.plugins = @plugins.to_struct
-      b.config.verbose   = false
-      @networks[network["name"]] = b
+      @plugins.load_plugins
     end
   end
   
@@ -83,12 +100,12 @@ class CadBot
       conds = {}
       if db["socket"]
         conds[:socket] = db["socket"]
-      elsif db["host"] || db["port"]
+      elsif db[:host] || db["port"]
         conds[:host] = db["host"] || "127.0.0.1"
         conds[:port] = db["port"] || "6379"
       end
       CadBot::Database.load(conds)
-    end  
+    end
   end
   
   def start
