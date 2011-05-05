@@ -1,8 +1,8 @@
+require "bundler/setup"
 require 'cinch'
 require 'yaml'
 require 'ostruct'
 require 'redis'
-require "bundler/setup"
 
 require File.dirname(__FILE__) + "/extensions"
 require File.dirname(__FILE__) + "/cad_bot/database"
