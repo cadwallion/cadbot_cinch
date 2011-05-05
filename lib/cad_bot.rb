@@ -44,15 +44,13 @@ class CadBot
     end
     
     if options[:plugins]
-      if options[:plugins] != false
-        @config["plugins"] ||= {}
-        options[:plugins].each do |k,v|
-          @config["plugins"][k.to_s] = v
-        end
+      @config["plugins"] ||= {}
+      options[:plugins].each do |k,v|
+        @config["plugins"][k.to_s] = v
       end
     end
     
-    load_plugins
+    load_plugins unless options[:plugins] == false
     
     @networks = {}
     load_database

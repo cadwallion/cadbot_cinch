@@ -16,7 +16,13 @@ describe CadBot do
       it "creates a CadBot::PluginSet" do
         @bot.plugins.should be_instance_of(CadBot::PluginSet)
       end
+      
+      it "should load plugins from plugins dir" do
+        @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml")
+        @bot.plugins.path.should == (CadBot.root + "plugins/")
+      end
     end
+    
     
     context "custom configurations" do
       it "can take a new configuration file location instead of the default" do
