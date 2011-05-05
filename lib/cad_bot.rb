@@ -86,7 +86,6 @@ class CadBot
     end
   end
   
-  # @TODO: get the db object into the bot
   def load_networks
     if @config["networks"]
       @config["networks"].each do |network|
@@ -117,7 +116,7 @@ class CadBot
       conds = {}
       if db["socket"]
         conds[:socket] = db["socket"]
-      elsif db["host"] || db["port"]
+      elsif db[:host] || db["port"]
         conds[:host] = db["host"] || "127.0.0.1"
         conds[:port] = db["port"] || "6379"
       end
