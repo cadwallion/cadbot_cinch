@@ -45,17 +45,14 @@ class CadBot
     
     if options[:plugins]
       if options[:plugins] != false
-        @plugins.path = options[:plugins][:path] if options[:plugins][:path]
-        @plugins.prefix = options[:plugins][:prefix] if options[:plugins][:prefix]
-        @plugins.suffix = options[:plugins][:suffix] if options[:plugins][:suffix]
-        load_plugins  
+        @config["plugins"] ||= {}
+        options[:plugins].each do |k,v|
+          @config["plugins"][k.to_s] = v
+        end
       end
-    elsif @config["plugins"]
-      @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
-      @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
-      @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
-      load_plugins
     end
+    
+    load_plugins
     
     @networks = {}
     load_database
@@ -63,29 +60,7 @@ class CadBot
     
     instance_eval(&blk) if block_given?
   end
-  
-  def load_plugins
-    @plugins.plugins = []
-    Dir[@plugins.path + "/**/*.rb"].each do |file|
-      load_plugin(file)
-    end
-  end
-  
-  def load_plugin(file)
-    plugin = File.basename(file).sub(".rb","")
-    if Object.const_defined?(plugin.camelize.to_sym)
-      @plugins.plugins.delete(plugin.camelize.constantize)
-      Object.class_eval do
-        remove_const(plugin.camelize.to_sym)
-      end
-    end
-    load(file)
-    plugin_class = plugin.sub(".rb","").camelize.constantize
-    if plugin_class.included_modules.include? Cinch::Plugin
-      @plugins.plugins << plugin_class
-    end
-  end
-  
+
   def load_networks
     if @config["networks"]
       @config["networks"].each do |network|
@@ -108,6 +83,15 @@ class CadBot
     
     b.config.plugins = @plugins.to_struct
     @networks[options["name"]] = b
+  end
+  
+  def load_plugins
+    if @config["plugins"]
+      @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
+      @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
+      @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
+      @plugins.load_plugins
+    end
   end
   
   def load_database

@@ -61,20 +61,6 @@ describe CadBot do
     end
   end
   
-  describe "#load_plugin" do
-    it "clears out old versions of the plugins before loading new ones" do
-      @bot = CadBot.new(:config_file => false, :plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
-      @bot.load_plugin(CadBot.root + "spec/fixtures/plugins/botsnack/bot_snack.rb")
-      @bot.plugins.plugins.should == [BotSnack]
-    end
-    
-    it "pulls only plugins that include Cinch::Plugins" do
-      @bot = CadBot.new(:config_file => false, :plugins => false)
-      @bot.load_plugin(CadBot.root + "spec/fixtures/plugins/fake/fake.rb")
-      @bot.plugins.plugins.should_not include(Fake)
-    end
-  end
-  
   describe "#load_networks" do
     it "calls #load_network for every network in the @config" do
       @test_config = File.open(CadBot.root + "spec/fixtures/bot.yml", "r") { |f| YAML::load(f) }
