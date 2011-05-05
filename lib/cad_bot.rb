@@ -90,8 +90,8 @@ class CadBot
       @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
       @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
       @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
-      @plugins.load_plugins
     end
+    @plugins.load_plugins
   end
   
   def load_database
