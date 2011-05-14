@@ -1,6 +1,7 @@
 source "http://rubygems.org"
 
-gem "cinch", :git => "git://github.com/cadwallion/cinch.git", :branch => "invest"
+#gem "cinch", :git => "git://github.com/cadwallion/cinch.git", :branch => "invest"
+gem "cinch", "~>1.1.3"
 gem "redis", "~>2.2.0"
 gem "rspec", "~>2.5.0", :group => :test
 
