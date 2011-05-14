@@ -5,18 +5,24 @@ describe CadBot do
   describe "#initialize" do
     context "default configurations" do
       before(:each) do
-        @bot = CadBot.new
+        @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml")
       end
       
       it "loads configuration YAML" do
         @bot.config.should_not be_nil
-        @bot.config.should == File.open(CadBot.root + "/config/bots.yml", "r") { |f| YAML::load(f) }
+        @bot.config.should == File.open(CadBot.root + "spec/fixtures/bot.yml", "r") { |f| YAML::load(f) }
       end
 
       it "creates a CadBot::PluginSet" do
         @bot.plugins.should be_instance_of(CadBot::PluginSet)
       end
+      
+      it "should load plugins from plugins dir" do
+        @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml")
+        @bot.plugins.path.should == (CadBot.root + "plugins/")
+      end
     end
+    
     
     context "custom configurations" do
       it "can take a new configuration file location instead of the default" do
@@ -27,7 +33,7 @@ describe CadBot do
       end
       
       it "can take a block for additional configs" do
-        @bot = CadBot.new do
+        @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml") do
           def test_method
             "foo"
           end
@@ -42,12 +48,12 @@ describe CadBot do
       end
       
       it "can specify no plugin directory to load manually" do
-        @bot = CadBot.new(:plugins => false)
+        @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml", :plugins => false)
         @bot.plugins.plugins.should == []
       end
       
       it "can specify plugin variables (path, suffix, prefix)" do
-        @bot = CadBot.new(:plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
+        @bot = CadBot.new(:config_file => CadBot.root + "spec/fixtures/bot.yml", :plugins => { :path => (CadBot.root + "spec/fixtures/plugins/") })
         @bot.plugins.plugins.should == [BotSnack]
       end
     end

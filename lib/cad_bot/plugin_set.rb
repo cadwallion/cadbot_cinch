@@ -7,7 +7,7 @@ class CadBot
       @plugins  = []
       @prefix   = "@"
       @suffix   = nil
-      @path     = CadBot.root + "/plugins/"
+      @path     = CadBot.root + "plugins/"
     end
     
     def load_plugins(reset = true)

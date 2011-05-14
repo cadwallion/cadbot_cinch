@@ -7,7 +7,7 @@ Installation
 ----
 To start, clone the repository and install dependencies.  CadBot users Bundler to manage deps for the core and the plugins:
 
-``` ruby
+```
 git clone git://github.com/cadwallion/cadbot_cinch.git
 cd cadbot_cinch && bundle install
 ```
@@ -19,7 +19,7 @@ Usage
 
 Once you're installed, it's as easy as:
 
-``` ruby
+```
 ruby main.rb
 ```
 

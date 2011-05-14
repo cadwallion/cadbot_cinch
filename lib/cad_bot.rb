@@ -1,8 +1,8 @@
+require "bundler/setup"
 require 'cinch'
 require 'yaml'
 require 'ostruct'
 require 'redis'
-require "bundler/setup"
 
 require File.dirname(__FILE__) + "/extensions"
 require File.dirname(__FILE__) + "/cad_bot/database"
@@ -44,15 +44,13 @@ class CadBot
     end
     
     if options[:plugins]
-      if options[:plugins] != false
-        @config["plugins"] ||= {}
-        options[:plugins].each do |k,v|
-          @config["plugins"][k.to_s] = v
-        end
+      @config["plugins"] ||= {}
+      options[:plugins].each do |k,v|
+        @config["plugins"][k.to_s] = v
       end
     end
     
-    load_plugins
+    load_plugins unless options[:plugins] == false
     
     @networks = {}
     load_database
@@ -90,8 +88,8 @@ class CadBot
       @plugins.prefix = @config["plugins"]["prefix"] if @config["plugins"]["prefix"]
       @plugins.suffix = @config["plugins"]["suffix"] if @config["plugins"]["suffix"]
       @plugins.path   = @config["plugins"]["path"] if @config["plugins"]["path"]
-      @plugins.load_plugins
     end
+    @plugins.load_plugins
   end
   
   def load_database
