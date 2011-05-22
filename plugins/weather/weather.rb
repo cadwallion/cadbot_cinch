@@ -14,36 +14,18 @@ class Weather
 			'key' => WEATHER_API
 	}
 
-  match /^@weather ?(\S+)? ?(\S+)?/, method: :weather, :use_prefix => false
+  match /^@weather$/, method: :report, :use_prefix => false
+  match /^@weather report(.+)?/, method: :report, :use_prefix => false
+  match /^@weather forecast(.+)?/, method: :forecast, :use_prefix => false
+  match /^@weather search (.+)$/, method: :search, :use_prefix => false 
+  match /^@weather map(.+)?/, method: :map, :use_prefix => false
+  match /^@weather convert (.+)$/, method: :convert, :use_prefix => false
+  match /^@weather save (.+)$/, method: :save, :use_prefix => false
+  match /^@weather help$/, method: :help, :use_prefix => false
   
-  def weather(m, command, param)
-    case command
-    when 'report'
-      report m, param
-    when 'forecast'
-      forecast m, param
-    when 'map'
-      map m, param
-    when 'search'
-      search m, param
-    when 'convert'
-      convert m, param
-    when 'save'
-      save m, param
-    when 'help'
-      m.reply "Weather commands.  USAGE: weather <command> <postal>."
-    else
-      postal = get_user_postal(m.user.nick, param)
-      if postal.nil?
-        m.reply "Unable to process that command"
-      else
-        report m, postal
-      end
-    end
-  end
-  
-  def report(m, param)
-    postal = get_user_postal(m.user.nick, param)
+  def report(m, param = nil)
+    postal = get_user_postal(m.user.nick, param.strip)
+    m.reply "Cannot get weather without postal code supplied or in memory, please try again." if postal.nil?
 
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS
@@ -65,8 +47,8 @@ class Weather
   end
   
   def forecast(m, param)
-    postal = get_user_postal(m.user.nick, param)
-    return if postal.nil?
+    postal = get_user_postal(m.user.nick, param.strip)
+    m.reply "Cannot get weather without postal code supplied or in memory, please try again." if postal.nil?
     
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS.merge('dayf' => '5')
@@ -90,6 +72,9 @@ class Weather
         else
           m.reply "City code not found."
         end
+      end
+      http.errback do
+        m.reply "Error accessing weather information, please try again."
       end
     end
   end
@@ -116,7 +101,13 @@ class Weather
   end
   
   def map(m, postal)
-    m.reply "http://www.weather.com/weather/map/interactive/#{postal}"
+    postal = get_user_postal(m.user.nick, postal.strip)
+    
+    if postal.nil?
+      m.reply "Cannot find map information for that postal code, please try again." 
+    else
+      m.reply "http://www.weather.com/weather/map/interactive/#{postal}"
+    end
   end
   
   def convert(m, temp)
