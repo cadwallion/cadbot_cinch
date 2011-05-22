@@ -25,7 +25,7 @@ class Weather
   
   def report(m, param = nil)
     postal = get_user_postal(m.user.nick, param.strip)
-    m.reply "Cannot get weather without postal code supplied or in memory, please try again." if postal.nil?
+    return if postal.nil?
 
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS
@@ -48,7 +48,7 @@ class Weather
   
   def forecast(m, param)
     postal = get_user_postal(m.user.nick, param.strip)
-    m.reply "Cannot get weather without postal code supplied or in memory, please try again." if postal.nil?
+    return if postal.nil?
     
     EventMachine.run do
       http = EventMachine::HttpRequest.new("http://xoap.weather.com/weather/local/#{postal}").get :query => QUERY_PARAMS.merge('dayf' => '5')
@@ -102,12 +102,8 @@ class Weather
   
   def map(m, postal)
     postal = get_user_postal(m.user.nick, postal.strip)
-    
-    if postal.nil?
-      m.reply "Cannot find map information for that postal code, please try again." 
-    else
-      m.reply "http://www.weather.com/weather/map/interactive/#{postal}"
-    end
+    return if postal.nil?
+    m.reply "http://www.weather.com/weather/map/interactive/#{postal}"
   end
   
   def convert(m, temp)
