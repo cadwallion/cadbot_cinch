@@ -24,7 +24,7 @@ class Weather
   match /^@weather help$/, method: :help, :use_prefix => false
   
   def report(m, param = nil)
-    postal = get_user_postal(m.user.nick, param.strip)
+    postal = get_user_postal(m.user.nick, param)
     return if postal.nil?
 
     EventMachine.run do
@@ -47,7 +47,7 @@ class Weather
   end
   
   def forecast(m, param)
-    postal = get_user_postal(m.user.nick, param.strip)
+    postal = get_user_postal(m.user.nick, param)
     return if postal.nil?
     
     EventMachine.run do
@@ -101,7 +101,7 @@ class Weather
   end
   
   def map(m, postal)
-    postal = get_user_postal(m.user.nick, postal.strip)
+    postal = get_user_postal(m.user.nick, postal)
     return if postal.nil?
     m.reply "http://www.weather.com/weather/map/interactive/#{postal}"
   end
@@ -147,7 +147,7 @@ class Weather
         return postal
       end
     else
-      return param
+      return param.strip
     end
   end
   
