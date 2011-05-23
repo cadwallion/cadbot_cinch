@@ -25,7 +25,12 @@ class Sed
     else
       replacement = original.sub(matcher, replacement)
     end
-    m.reply "#{m.user.nick} meant '#{replacement}'"
+    
+    if conditional.include? 't'
+      m.reply "#{replacement}"
+    else
+      m.reply "#{m.user.nick} meant '#{replacement}'"
+    end
   end
   
   def set_last_message(user, message)
