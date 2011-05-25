@@ -10,7 +10,7 @@ class Recall
       m.user.privmsg "Recalling the last #{line_count} lines logged for you:"
     elsif lines =~ /^([0-9]+)-([0-9]+)$/
       line_start = $1.to_i
-      line_count = $2.to_i - line_start
+      line_count = $2.to_i - line_start + 1
       line_end = line_start + line_count
       m.user.privmsg "Recalling lines #{line_start}-#{line_end} logged for you:"
     else
@@ -18,7 +18,7 @@ class Recall
       return
     end
     lines = @bot.database.lrange("user:#{m.user.nick}:messages",line_start, line_count) 
-    lines.each do |line|
+    lines.reverse.each do |line|
       m.user.privmsg "<#{m.user.nick}> #{line}"
     end
   end
