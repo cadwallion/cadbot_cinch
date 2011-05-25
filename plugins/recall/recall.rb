@@ -17,7 +17,7 @@ class Recall
       m.privmsg "Unable to interpret line counts for recall, try again."
       return
     end
-    lines = @bot.database.lrange("users:#{m.user.nick}:messages",line_start, line_count) 
+    lines = @bot.database.lrange("user:#{m.user.nick}:messages",line_start, line_count) 
     lines.each do |line|
       m.user.privmsg "<#{m.user.nick}> #{line}"
     end
