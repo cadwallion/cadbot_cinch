@@ -73,6 +73,7 @@ class CadBot
     b = Cinch::Bot.new do
       @logger = Cinch::Logger::FormattedLogger.new(File.open(CadBot.root + "log/#{options["name"]}.log", "a+"))
       @database = CadBot::Database.connection
+      @config.messages_per_second = 2.5
     end
   
     options.each do |key, value|
