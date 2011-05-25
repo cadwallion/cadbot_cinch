@@ -1,6 +1,5 @@
 class Recall
   include Cinch::Plugin
-  include MessageMethods
   
   match /recall (\S+)/
   

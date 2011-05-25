@@ -1,7 +1,6 @@
 require 'ostruct'
 class Seen
   include Cinch::Plugin
-  include MessageMethods
   
   listen_to :channel
   

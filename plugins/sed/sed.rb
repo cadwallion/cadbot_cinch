@@ -1,6 +1,5 @@
 class Sed
   include Cinch::Plugin
-  include MessageMethods
   
   listen_to :channel
   SED_REGEX = /^s\/(.+?)\/(.+?)(\/\S+|\/|$)/
@@ -33,9 +32,7 @@ class Sed
       m.reply "#{m.user.nick} meant '#{replacement}'"
     end
   end
-end
-
-module MessageMethods
+  
   def set_last_message(user, message)
     if !@bot.database.sismember("users_logged", user)
       @bot.database.sadd("users_logged", user) 
