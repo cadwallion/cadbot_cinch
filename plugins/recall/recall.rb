@@ -4,11 +4,11 @@ class Recall
   match /recall (.+)/
   
   def execute(m, lines)
-    if lines =~ /(\d+)/
+    if lines =~ /^([0-9]+)$/
       line_start = 0
       line_count = $1.to_i
       m.user.privmsg "Recalling the last #{line_count} lines logged for you:"
-    elsif lines =~ /(\d+)-(\d+)/
+    elsif lines =~ /^([0-9]+)-([0-9]+)$/
       line_start = $1.to_i
       line_count = $2.to_i - line_start
       line_end = line_start + line_count
