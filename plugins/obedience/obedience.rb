@@ -1,3 +1,5 @@
+require 'json'
+require 'em-http-request'
 class Obedience
   include Cinch::Plugin
   
@@ -5,6 +7,7 @@ class Obedience
   match "snackcount", method: :snackcount
   match "botsmack", method: :discipline
   match "smackcount", method: :smackcount
+  match "speak", method: :speak
   
   def feed(m)
     m.reply "Thank You! :-)"
@@ -23,5 +26,15 @@ class Obedience
   
   def smackcount(m)
     m.reply "Total times smacked: #{@bot.database.get("botsmacks")}"
+  end
+  
+  def speak(m)
+    EventMachine.run do
+      http = EventMachine::HttpRequest.new("http://www.iheartquotes.com/api/v1/random").get(:max_lines => "1", :format= "json")
+      http.callback do
+        json = JSON.parse(http.response)
+        m.reply "#{json['quote']}"
+      end
+    end
   end
 end
