@@ -6,22 +6,22 @@ class Obedience
   match "botsmack", method: :discipline
   match "smackcount", method: :smackcount
   
-  def feed
+  def feed(m)
     m.reply "Thank You! :-)"
     @bot.database.incr("botsnacks")
   end
   
   
-  def snackcount
+  def snackcount(m)
     m.reply "Total snacks eaten: #{@bot.database.get("botsnacks")}"
   end
   
-  def discipline
+  def discipline(m)
     m.reply "?!? D-:"
     @bot.database.incr("botsmacks")
   end
   
-  def smackcount
+  def smackcount(m)
     m.reply "Total times smacked: #{@bot.database.get("botsmacks")}"
   end
 end
