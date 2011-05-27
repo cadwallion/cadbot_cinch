@@ -29,17 +29,18 @@ class Obedience
     m.reply "Total times smacked: #{@bot.database.get("botsmacks")}"
   end
   
-  def speak(m)
+  def speak
     sources = %w{futurama prog_style subversion joel_on_software starwars calvin math hitchhiker}
     json = Quote.get('/api/v1/random', :query => { :max_lines => "5", :format => "json", :source => sources.join("+") })
     quote = json['quote']
-    quote.gsub!(/\n\t?\s+-{2}/,'\n--')
+    quote.gsub!(/\n\t?\s+-{2}/,"\n")
     quote.gsub!(/  /,' ')
-    quote.gsub!(/\\\\n/,'\n')
-    quote.gsub!(/([A-Za-z])\n([A-Za-z])/,'\1 \2')
+    quote.gsub!(/\\{2,}n/, "\n")
+    quote.gsub!(/(.+)\n([^A-Z])/,'\1 \2')
+    quote.gsub!(/\s{2,}/,' ')
     quote.split(/\n/).each do |line|
-      line = line.gsub(/\n/,'').gsub(/\t/,'').lstrip
-      m.reply line unless line == "" 
+      line = line.gsub(/\t/,'').lstrip
+      puts line unless line == "" 
     end
   end
 end
