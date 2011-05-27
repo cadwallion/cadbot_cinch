@@ -36,6 +36,7 @@ class Obedience
     quote.gsub!(/\n\t?\s+-{2}/,'\n--')
     quote.gsub!(/  /,' ')
     quote.gsub!(/\\\\n/,'\n')
+    quote.gsub!(/([A-Za-z])\n([A-Za-z])/,'\1 \2')
     quote.split(/\n/).each do |line|
       line = line.gsub(/\n/,'').gsub(/\t/,'').lstrip
       m.reply line unless line == "" 
