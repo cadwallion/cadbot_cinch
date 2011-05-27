@@ -1,4 +1,5 @@
 require 'spec_helper'
+CadBot::Database.test = false
 describe CadBot::Database do
   before(:each) do
     CadBot::Database.disconnect
