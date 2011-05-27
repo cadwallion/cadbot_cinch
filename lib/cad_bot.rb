@@ -76,6 +76,7 @@ class CadBot
       @config.messages_per_second = 2.5
     end
   
+
     options.each do |key, value|
       b.config.send("#{key}=", value)
     end

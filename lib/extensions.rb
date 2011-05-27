@@ -28,16 +28,9 @@ class String
     Extensions.constantize(self)
   end
 end
-
 module Cinch
   class Bot
-    def database
-      if @database.nil?
-        raise "Cannot access database, configuration not loaded."
-      else
-        @database
-      end
-    end
+    attr_accessor :database
   end
 end
 
