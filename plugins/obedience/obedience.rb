@@ -30,7 +30,10 @@ class Obedience
   end
   
   def speak(m)
-    json = Quote.get('/api/v1/random', :query => { :max_lines => "5", :format => "json", :source => "prog_style+subversion++joel_on_software+starwars+calvin+math+hitchhiker" })
-    m.reply "#{json['quote']}"
+    sources = %w{futurama prog_style subversion joel_on_software starwars calvin math hitchhiker}
+    json = Quote.get('/api/v1/random', :query => { :max_lines => "5", :format => "json", :source => sources.join("+") })
+    json['quote'].split("\n\t").each do |line|
+      m.reply line
+    end
   end
 end
