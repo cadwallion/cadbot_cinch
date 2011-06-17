@@ -7,6 +7,7 @@ class Sed
   
   def listen(m)
     unless m.message =~ SED_REGEX
+      log_user(m.user.nick)
       set_last_message(m.user.nick, m.message)
       set_last_channel_message(m.channel.name, m.message) if m.channel
     end
@@ -46,9 +47,6 @@ class Sed
   end
   
   def set_last_message(user, message)
-    if !@bot.database.sismember("users_logged", user)
-      @bot.database.sadd("users_logged", user) 
-    end
     @bot.database.lpush("user:#{user}:messages", message)
     @bot.database.ltrim("user:#{user}:messages", 0, 1000)
   end
@@ -56,6 +54,12 @@ class Sed
   def set_last_channel_message(channel, message)
     @bot.database.lpush("channel:#{channel}:messages", message)
     @bot.database.ltrim("channel:#{channel}:messages", 0, 1000)
+  end
+  
+  def log_user(user)
+    if !@bot.database.sismember("users_logged", user)
+      @bot.database.sadd("users_logged", user) 
+    end
   end
   
   def get_user_message(user, scrollback = 1)
